@@ -1,9 +1,8 @@
 import React from 'react';
 import {render} from 'react-dom';
-
-import JsonEditor from './jsonEditor'
+import JsonCodeContent from './jsonCodeContent';
 
 render(
-    <JsonEditor />,
+    <JsonCodeContent />,
     document.getElementById('app')
 );

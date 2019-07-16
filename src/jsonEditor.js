@@ -1,18 +1,150 @@
 import React, {Component} from 'react';
 import './style.css'
-import TextArea from 'antd/lib/input/TextArea';
 //import err                    from './err';
 import { format }             from './locale';
 import defaultLocale          from './locale/en';
 //if (!valid) console.log(validate.errors);
-import { jsonlint } from './jsonP'
+import jsonlint from 'jsonlint-mod';
+import beautify from 'js-beautify/js/lib/beautify';
+import minify from 'jsonminify';
+import Clipboard from 'clipboard';
+import $ from 'balajs';
+import './style.css';
+
+const doc = window.document;
 
 export default class JsonEditor extends React.Component {
     constructor(props) {
         super(props);
         this.tokenize = this.tokenize.bind(this)
         this.newSpan = this.newSpan.bind(this)
-        this.textChange = this.textChange.bind(this)
+        //this.updateInternalProps();
+        this.updateInternalProps = this.updateInternalProps.bind(this);
+        this.scheduledUpdate = this.scheduledUpdate.bind(this);
+        this.jsonEditorGetValue = this.jsonEditorGetValue.bind(this);
+        this.jsonEditorSetValue = this.jsonEditorSetValue.bind(this);
+        this.initJsonEditor = this.initJsonEditor.bind(this);
+        this.state ={ }
+        this.editor ={
+            text:{
+                "analyzers":[{
+                    "type":"normal"
+                }],
+                "clients":[ {
+                    "cmd":"demo",
+                    "count":2,
+                    "param":"{\"app_id\":\"5b642463d225e2004d551af7\",\"mode\":\"av\",\"silent\":\"false\",\"api_addr\":\"rtc-test.bytedance.com\",\"msaddr\":\"\",\"ssaddr\":\"\",\"auto_pub\":\"true\",\"auto_sub\":\"true\",\"sub_only\":\"false\"}"
+                }],
+                "roomCount":3000,
+                "roomMaxLiveTime":120,
+                "roomMinLiveTime":120,
+                "testDuration":600
+            },
+            getValue: this.jsonEditorGetValue,
+            setValue: this.jsonEditorSetValue,
+            addLineClass: this.jsonEditorAddLineClass
+        }
+        this.registerEvents();
+        this.containerElement = undefined;
+    }
+    jsonEditorAddLineClass = ()=>{
+
+    }
+    jsonEditorSetValue = (value)=>{
+        this.editor.text = value
+    }
+    jsonEditorGetValue = ()=>{
+        const pre_dom = this.containerElement;
+        let reg=/<\/?.+?\/?>/g;
+        return pre_dom.innerHTML.replace(reg,'')
+    }
+    // registers events
+    registerEvents() {
+        // when Ctrl-Enter is pressed, run "go" method
+        doc.addEventListener('keyup', (evt) => {
+            // const ENTER_KEY = 13;
+            // if (evt.ctrlKey && evt.keyCode === ENTER_KEY) {
+                this.go();
+            //}
+        });
+    }
+    // the main function of this app
+    go() {
+        const { code } = this;
+        const trimmedCode = code.trim();
+        // if URL is given, fetch data on this URL
+        if (trimmedCode.indexOf('http') === 0) {
+            fetchExternal(
+                trimmedCode,
+                resp => this.validate(resp), // if fetching is OK, run validator
+                err => this.notify(false, err) // if not, show an error
+            );
+        } else {
+            // if non-url is given, run validator
+            this.validate();
+        }
+        return this;
+    }
+
+    // reformats JSON depending on query.reformat value
+    // code argument is optional
+    reformat(givenCode) {
+        let code = typeof givenCode === 'undefined' ? this.code : givenCode;
+        // if reformat==compress, use minifier
+        // if reformat==no, keep code as is
+        // else beautify code
+        // if (this.query.reformat === 'compress') {
+        //     code = minify(code) || code;
+        // } else if (this.query.reformat !== 'no') {
+            code = beautify.js_beautify(code, {
+                indent_with_tabs: true
+            });
+        // }
+        this.code = code;
+        return this;
+    }
+
+    notify(success, text) {
+        // const result = $.one('#result');
+        // $.one('#result-container').classList.add('shown');
+        // // ie10 doesn't support 2nd argument in classList.toggle
+        // result.classList[success ? 'add' : 'remove']('success');
+        // result.classList[!success ? 'add' : 'remove']('error');
+        // result.textContent = text;
+        return this;
+    }
+    validate(givenCode) {
+        let lineMatches;
+        this.reformat(givenCode);
+        const { code } = this;
+        console.log('====code====',code)
+        try {
+            jsonlint.parse(code);
+            this.notify(true, 'Valid JSON');
+        } catch (e) {
+            console.log('e',e)
+            // retrieve line number from error string
+            lineMatches = e.message.match(/line ([0-9]*)/);
+            console.log('lineMatches',lineMatches)
+            if (lineMatches && lineMatches.length > 1) {
+                this.highlightErrorLine(+lineMatches[1] - 1,lineMatches);
+            }
+            console.log(lineMatches['input'])
+            this.notify(false, e);
+        }
+        return this;
+    }
+    // highlights given line of code
+    // if null is passed function removes highlighting
+    highlightErrorLine(line,lineMatches) {
+        if (typeof line === 'number') {
+            this.errorLine = this.editor.addLineClass(line, 'background', 'line-error');
+            //this.editor.setCursor(line);
+        } else if (this.errorLine) {
+            this.editor.removeLineClass(this.errorLine, 'background', 'line-error');
+            this.errorLine = null
+        }
+        return this;
     }
     newSpan(param){
         return param
@@ -32,7 +164,6 @@ export default class JsonEditor extends React.Component {
                 hasChildren   = containerNode.hasChildNodes();
             if(!hasChildren) return '';
             const children = containerNode.childNodes;
-            
             let buffer = {
                 tokens_unknown   : [],
                 tokens_proto     : [],
@@ -83,9 +214,9 @@ export default class JsonEditor extends React.Component {
                         number    : '',
                         symbol    : '',
                         space     : '',
-                        delimiter : '', 
+                        delimiter : '',
                         quarks    : []
-                    };  
+                    };
                 function pushAndStore(char,type){
                     switch(type){
                         case 'symbol' : case 'delimiter' :
@@ -1171,7 +1302,7 @@ export default class JsonEditor extends React.Component {
             function indentII(number){ 
                 var space = []; 
                 if(number > 0 ) lines++;
-                for (var i = 0; i < number * 2; i++) space.push('&nbsp;'); 
+                for (var i = 0; i < number * 2; i++) space.push('&nbsp;');
                 return (number > 0 ? '<br>' : '') + space.join('');
             };
             let markup = ''; 
@@ -1211,31 +1342,95 @@ export default class JsonEditor extends React.Component {
             };
         }
     }
-    componentDidMount(){
-        var valid = this.tokenize({"data":11})
-        console.log(valid)
-        jsonlint.parse('{"creative?": false}');
-
+    scheduledUpdate(){
+        if('onKeyPressUpdate' in this.props) if(this.props.onKeyPressUpdate===false) return;
+        const { updateTime } = this;
+        if(updateTime===false) return;
+        if(updateTime > new Date().getTime()) return;
+        this.update();
     }
-    textChange(e){
-        // const container = this.refContent,
-        // data      = this.tokenize(container);
-        const data = e.target.value;
-               console.log(data)
-
-        var valid = jsonlint.parse(data)
-        console.log(valid)
+    updateInternalProps(){
+        if((!('onKeyPressUpdate' in this.props)) || this.props.onKeyPressUpdate){
+            if(!this.timer) this.timer = setInterval(this.scheduledUpdate,100);
+        }
+        else
+        if(this.timer){
+            clearInterval(this.timer);
+            this.timer = false;
+        }
+    }
+    syntaxHighlight = (json)=>{
+        if (typeof json != 'string') {
+            json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return `<span ${cls!=='key'?'contenteditable=true':'contenteditable=false'} class="${cls}">${match}</span>`;
+        });
+	}
+    assignRef = (component) => {
+        this.containerElement = component;
+    };
+    componentDidMount() {
+        this.initJsonEditor();
+    }
+    initJsonEditor =()=>{
+        const form = this.form = doc.forms.main;
+        // define 'code' accessors
+        Object.defineProperty(this, 'code', {
+            get() {
+                return this.jsonEditorGetValue();
+            },
+            set(v) {
+                form.code.value = v;
+                this.editor.setValue(v);
+            }
+        });
     }
     render() {
+        const { text='' } = this.editor;
         return(
-            <textarea id="source" rows="20" cols="50" onChange={this.textChange}></textarea>
-
-            // <div contentEditable="true"   
-            //     style={{width:'100%',height:100}}                          
-            //     ref             = { ref => this.refContent = ref }
-            // onKeyDown={this.textChange}>
-            
-            // </div>
+            <div>
+                <form name="main">
+                    <textarea id="code" name="code" style={{ display: 'none' }}></textarea>
+                </form>
+                <span
+                    ref={ref=>this.assignRef(ref)}
+                    id="source" rows="20" cols="50"
+                    contentEditable="true"
+                    dangerouslySetInnerHTML={{__html: this.syntaxHighlight(text)}}
+                    style = {{
+                        display       : 'inline-block',
+                        boxSizing     : 'border-box',
+                        verticalAlign : 'top',
+                        height        : '100%',
+                        width         : '',
+                        flex          : 1,
+                        margin        : 0,
+                        padding       : '5px',
+                        overflowX     : 'hidden',
+                        overflowY     : 'auto',
+                        wordWrap      : 'break-word',
+                        // whiteSpace    : 'pre-line',
+                        color         : '#D4D4D4',
+                        outline       : 'none',
+                        background    : '#fff',
+                        width         : '100%',
+                        height        : '500px',
+                    }}/>
+            </div>
         )
     }
 }

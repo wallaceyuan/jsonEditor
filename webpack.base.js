@@ -4,20 +4,22 @@ var ExtractTextWebpackPlugin = require("extract-text-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-
-let cssExtract = new ExtractTextWebpackPlugin({
-    filename: 'css.css',
-    allChunks: true
-});
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+// let cssExtract = new ExtractTextWebpackPlugin({
+//     filename: 'css.css',
+//     allChunks: true
+// });
 let sassExtract = new ExtractTextWebpackPlugin('sass.css')
 let lessExtract = new ExtractTextWebpackPlugin('less.css')
 
 module.exports = {
-    entry:'./src/index.js',
+    entry:{
+        'index':'./src/index.js',
+    },
     output: {
+		globalObject: 'self',
         path: path.resolve(__dirname, './dist'),
-        filename: 'bundle.[hash:8].js',
-        publicPath: ''
+        filename: '[name].bundle.js',
     },
     resolve: {
         //引入模块的时候，可以不用扩展名
@@ -71,11 +73,11 @@ module.exports = {
     module: {
         rules:[
             {
-                test: /\.js$/,
+                test: /\.jsx?$/,
                 use: {
                     loader:'babel-loader',
                     options: {
-                        presets: ['env','es2015', 'react'],
+                        presets: ['react','es2015','stage-0'],
                     }
                 },
                 include:path.join(__dirname,'./src'),
@@ -83,13 +85,7 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use: cssExtract.extract({
-                    fallback: "style-loader",
-                    use: ['css-loader?minimize','postcss-loader'],
-                    publicPath: "/dist"
-                }),
-                include:path.join(__dirname,'./src'),
-                exclude:/node_modules/
+                use: [ 'style-loader', 'css-loader' ]
             },
             {
                 test: /\.scss$/,
@@ -132,7 +128,7 @@ module.exports = {
             __development__: JSON.stringify(process.env.NODE_ENV)
         }),
         new CleanWebpackPlugin(['dist']),
-        cssExtract,
+        //cssExtract,
         lessExtract,
         sassExtract,
         new HtmlWebpackPlugin({
@@ -152,6 +148,10 @@ module.exports = {
             name: 'common' // 指定公共 bundle 的名称。
     +     })*/
         new webpack.HotModuleReplacementPlugin(), // 热替换插件
-        new webpack.NamedModulesPlugin() // 执行热替换时打印模块名字
+        new webpack.NamedModulesPlugin(), // 执行热替换时打印模块名字
+        new MonacoWebpackPlugin({
+            languages: ['json'],
+            features:["coreCommands","find"]
+        }),
     ]
 };
