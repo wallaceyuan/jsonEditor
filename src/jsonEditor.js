@@ -33,7 +33,7 @@ export default class JsonEditor extends React.Component {
                 "clients":[ {
                     "cmd":"demo",
                     "count":2,
-                    "param":"{\"app_id\":\"5b642463d225e2004d551af7\",\"mode\":\"av\",\"silent\":\"false\",\"api_addr\":\"rtc-test.bytedance.com\",\"msaddr\":\"\",\"ssaddr\":\"\",\"auto_pub\":\"true\",\"auto_sub\":\"true\",\"sub_only\":\"false\"}"
+                    "param":"{\"app_id\":\"5b642463d225e2004d551af7\",\"mode\":\"av\",\"silent\":\"false\",\"msaddr\":\"\",\"ssaddr\":\"\",\"auto_pub\":\"true\",\"auto_sub\":\"true\",\"sub_only\":\"false\"}"
                 }],
                 "roomCount":3000,
                 "roomMaxLiveTime":120,
