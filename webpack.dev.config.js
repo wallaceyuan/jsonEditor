@@ -4,6 +4,9 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
+  entry:{
+      'index':'./demo/index.js',
+  },
   devServer: {
       contentBase: path.resolve(__dirname,'dist'),
       publicPath: '/',
@@ -19,10 +22,25 @@ module.exports = {
       aggregateTimeout: 300, //监听到变化发生后等300ms再去执行动作，防止文件更新太快导致编译频率太高
       poll: 1000 //通过不停的询问文件是否改变来判断文件是否发生变化，默认每秒询问1000次
   },
+  module: {
+    rules:[
+      {
+          test: /\.jsx?$/,
+          use: {
+              loader:'babel-loader',
+              options: {
+                  presets: ['react','es2015','stage-0'],
+              }
+          },
+          include: path.join(__dirname,'./demo'),
+          exclude: /node_modules/
+      }
+    ]
+  },
   plugins:[
     new HtmlWebpackPlugin({
       title: '',
-      template: './src/index.html',
+      template: './demo/index.html',
       filename: `index.html`,
       hash: true
     }),
