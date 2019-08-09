@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import JSonCode from './jsonCode';
+import JSonCode from './main';
 const value = {"aec":{"hw":true,"sw":true,"type":0,"level":1},"agc":{"hw":true,"sw":true,"digital_gain":12,"limiter_enable":true,"mode":1,"target_dbov":-3}}
 
 export default class JsonCodeContent extends Component {
