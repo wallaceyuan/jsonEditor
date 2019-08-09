@@ -59,17 +59,6 @@ class JSonCode {
   initEditor = ()=>{
     this.ediror = CodeMirror.fromTextArea(this.container, this.options);
     this.ediror.setOption("theme", 'pastel-on-dark');
-    // this.ediror.on('beforeChange',(cm, e) => {
-    //   const start = e.from.line
-    //   const end = e.to.line;
-    //   var content = ''
-    //   for(var i = start;i<=end;i++){
-    //     content+= this.ediror.getLine(i)
-    //   }
-    //   if(content.slice(e.from.ch).match(/\"\:/g)){
-    //     e.canceled = true;
-    //   }
-    // })
   }
   getValue = ()=>{
     return this.ediror.getValue();

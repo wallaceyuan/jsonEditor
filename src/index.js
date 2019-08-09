@@ -1,6 +1,6 @@
 import React from 'react';
 import {render} from 'react-dom';
-import JsonCodeContent from './jsonCodeContent';
+import JsonCodeContent from './base';
 
 render(
     <JsonCodeContent />,
