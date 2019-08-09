@@ -1,5 +1,3 @@
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
-
 var CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
@@ -7,7 +5,7 @@ module.exports = {
         'index':'./src/main.js',
     },
     output: {
-        filename: 'jsoneditor.min.js',
+        filename: 'JsonEditor.js',
     },
     plugins: [
         new CleanWebpackPlugin(['dist'])

@@ -51,5 +51,7 @@ module.exports = {
         from: path.join(__dirname,'vendor'),//静态资源目录源地址
         to:'./vendor' //目标地址，相对于output的path目录
     }]),
+    new webpack.HotModuleReplacementPlugin(), // 热替换插件
+    new webpack.NamedModulesPlugin(), // 执行热替换时打印模块名字
   ]
 }

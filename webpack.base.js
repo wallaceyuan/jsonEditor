@@ -5,9 +5,6 @@ let sassExtract = new ExtractTextWebpackPlugin('sass.css')
 let lessExtract = new ExtractTextWebpackPlugin('less.css')
 
 module.exports = {
-    entry:{
-        'index':'./src/index.js',
-    },
     output: {
 		globalObject: 'self',
         path: path.resolve(__dirname, './dist'),
@@ -17,25 +14,6 @@ module.exports = {
         //引入模块的时候，可以不用扩展名
         extensions: [".js", ".less", ".json"],
         modules: [path.resolve(__dirname, 'node_modules')]
-    },
-    optimization: {
-        splitChunks: {
-            cacheGroups: {
-                commons: {
-                    chunks: "initial",
-                    minChunks: 2,
-                    maxInitialRequests: 5, // The default limit is too small to showcase the effect
-                    minSize: 0 // This is example is too small to create commons chunks
-                },
-                vendor: {
-                    test: /node_modules/,
-                    chunks: "initial",
-                    name: "vendor",
-                    priority: 10,
-                    enforce: true
-                }
-            }
-        }
     },
     module: {
         rules:[
@@ -96,7 +74,5 @@ module.exports = {
         }),
         lessExtract,
         sassExtract,
-        new webpack.HotModuleReplacementPlugin(), // 热替换插件
-        new webpack.NamedModulesPlugin(), // 执行热替换时打印模块名字
     ]
 };
