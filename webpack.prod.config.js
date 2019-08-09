@@ -2,11 +2,14 @@ const path = require('path');
 const webpack = require('webpack');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
+var CleanWebpackPlugin = require('clean-webpack-plugin');
+
 module.exports = {
     output: {
-        filename: 'bundle.min.js',
+        filename: 'jsoneditor.min.js',
     },
     plugins: [
-        new UglifyJSPlugin({sourceMap: true})
+        new UglifyJSPlugin(),
+        new CleanWebpackPlugin(['dist'])
     ]
 }

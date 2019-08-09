@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --mode development",
-    "build-development": "cross-env NODE_ENV=development webpack --mode development",
-    "build-production": "cross-env NODE_ENV=production webpack --mode development",
+    "build": "cross-env NODE_ENV=production webpack --mode production",
     "build-vendor": "webpack --config webpack.react.config.js --mode development",
     "test": "mocha --compilers js:babel-register --require ./test/test_helper.js --recursive ./test",
     "watch": "webpack --colors --progress --watch"
